@@ -11,6 +11,7 @@ database : config.dbname
 pool.query = util.promisify(pool.query);
 
 exports.hendler = async (event) => {
+    
     var result = await pool.query('select * from events;')
     return result;
 };
