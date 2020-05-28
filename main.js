@@ -1,6 +1,6 @@
 var mysql = require('mysql');
 var config = require('./config.json');
-var util = require('util')
+var util = require('util');
 
 var pool = mysql.createPool({
     host: config.dbhost,
@@ -14,13 +14,10 @@ pool.query = util.promisify(pool.query);
 exports.handler = async (e) => {
     let action = e.httpRequest;
     let data = [];
-    let result;
 
     if (action === 'GET') {
-        if ('event_id' in e.body) {
+        if ("event_id" in e.body) {
             data = await getOneEvent(e.body.event_id);
-            data = data[0];
-
         }
         else {
             data = await getAllEvents();
@@ -36,13 +33,7 @@ exports.handler = async (e) => {
         data = await deleteEvent(e.body.event_id);
     }
 
-    result = {
-        status: 200,
-        message: 'success',
-        data: data
-    };
-
-    return result;
+    return data;
 };
 
 const getAllEvents = () => {
@@ -51,7 +42,10 @@ const getAllEvents = () => {
 
 const getOneEvent = async (id) => {
     let result = await pool.query(`select * from events where event_id = ${id};`);
-    return result;
+    if (result.length > 0) {
+        return result[0]
+    }
+    return { 'errorMessage': `id: '${id}' was not found.` };
 };
 
 const createEvent = async (params) => {
@@ -64,13 +58,13 @@ const createEvent = async (params) => {
 const deleteEvent = async (id) => {
     let result = await pool.query(`delete from events where event_id = ${id};`);
     if (result.affectedRows === 0) {
-        return { errorMessage: "Unprocessed." };
+        return { "errorMessage": `id: '${id}' was not found.` };
     }
-    return result;
+    return { "message": `Event with id: '${id}' successfully was deleted.` };
 };
 const updateEvent = async (params) => {
     const { event_id, organizer, venue, date } = params;
-    let result = await pool.query(`update events organizer = ${organizer}, ${venue}, ${date}  $ in events where event_id = ${event_id};`);
-    let updatedEvent = await getOneEvent(result.insertId);
+    await pool.query(`update events set organizer = "${organizer}", venue = "${venue}", date = "${date}" where event_id = ${event_id};`);
+    let updatedEvent = getOneEvent(event_id);
     return updatedEvent;
 };
