@@ -33,6 +33,15 @@ exports.handler = async (e) => {
         data = await deleteEvent(e.body.event_id);
     }
 
+    // return {
+    //         statusCode: '200',
+    //         body: data,
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //             'Access-Control-Allow-Methods': '*',
+    //             'Access-Control-Allow-Origin': '*'
+    //         }
+    //       }
     return data;
 };
 
